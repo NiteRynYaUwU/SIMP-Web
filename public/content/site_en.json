@@ -62,6 +62,19 @@
   },
   "events": {
     "title": "Events",
-    "subtitle": "Learn more for upcoming events."
+    "subtitle": "Learn more for upcoming events.",
+    "eventCalendar": "Event Calendar",
+    "monthGridHint": "Month grid + clickable dates + event cards.",
+    "today": "Today",
+    "previousMonth": "Previous month",
+    "nextMonth": "Next month",
+    "weekLabelsHint": "Week labels follow UniMelb 2026 teaching periods",
+    "selectedDate": "Selected date",
+    "noEvents": "No events on this date.",
+    "clickHighlightedDay": "Click a highlighted day to view event details.",
+    "viewFullCalendar": "View Full Semester Calendar",
+    "suggestEvent": "Suggest an Event",
+    "pastHighlights": "Past Semester Highlights",
+    "carouselHint": "Auto-scrolls (hover / touch to pause). Seamless loop."
   }
 }

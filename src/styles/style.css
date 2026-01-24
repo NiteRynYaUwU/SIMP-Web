@@ -44,7 +44,7 @@ html[data-theme="zzz"] { --accent: #ffcc4d; --accent2: #ff5aa5; --bg: #0c0c0f; }
 .sectionHead { display: flex; gap: 18px; align-items: flex-end; justify-content: space-between; margin-bottom: 22px; }
 .sectionHead.mini { margin-top: 32px; margin-bottom: 14px; }
 .h2 { font-family: var(--font-display); letter-spacing: 0.03em; font-size: 34px; }
-.h3 { font-family: var(--font-display); letter-spacing: 0.02em; font-size: 20px; }
+.h3 { font-family: var(--font-display); letter-spacing: 0.02em; font-size: 20px; color: var(--text)}
 .muted { color: var(--muted); }
 
 .pill {
@@ -292,6 +292,7 @@ html[data-theme="zzz"] { --accent: #ffcc4d; --accent2: #ff5aa5; --bg: #0c0c0f; }
   color: var(--muted);
   font-size: 12px;
   padding: 8px 6px 12px;
+  text-align: center;
 }
 .grid {
   display: grid;

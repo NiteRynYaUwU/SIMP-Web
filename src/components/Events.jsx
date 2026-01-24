@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AdminHighlightsManager from './AdminHighlightsManager'
 import { loadEvents } from '../utils/loadEvents'
 import InfiniteSeamlessCarousel from './InfiniteSeamlessCarousel'
+import { useContentJson } from '../utils/useContent'
 
 /**
  * Fallback events (used if CMS events.json is empty / missing)
@@ -17,6 +18,24 @@ const FALLBACK_EVENTS = [
     location: 'Union House (TBC)',
   },
 ]
+
+const FALLBACK = {
+  events: {
+    eventCalendar: 'Event Calendar',
+    monthGridHint: 'Click on highlighted days to view events.',
+    previousMonth: 'Previous Month',
+    nextMonth: 'Next Month',
+    today: 'Today',
+    weekLabelsHint: 'UniMelb semester week labels are shown where applicable.',
+    selectedDate: 'Selected Date',
+    noEvents: 'No events scheduled for this date.',
+    clickHighlightedDay: 'Click on a highlighted day in the calendar to see events here.',
+    viewFullCalendar: 'View Full Calendar',
+    suggestEvent: 'Suggest an Event',
+    pastHighlights: 'Past Highlights',
+    carouselHint: 'Browse through our past event highlights.',
+  }
+}
 
 /**
  * Fallback highlights (CMS can later populate /content/highlights.json)
@@ -208,6 +227,8 @@ async function loadHighlights() {
 }
 
 export default function Events({ lang = 'en' }) {
+  const site = useContentJson(`/content/site_${lang}.json`, FALLBACK)
+
   const navigate = useNavigate()
   // URL-bound admin mode
   const [adminMode, setAdminMode] = useState(() => (typeof window !== 'undefined' ? isAdminFromUrl() : false))
@@ -358,148 +379,148 @@ export default function Events({ lang = 'en' }) {
   // This avoids native scroll friction and prevents wrap "jump back to start".
 
   return (
-    <section id="events" className="section">
-      <div className="sectionHead">
-        <div>
-          <h2 className="h2">Event Calendar</h2>
-          <p className="muted">Month grid + clickable dates + event cards.</p>
-        </div>
-
-        <div className="monthControls">
-          <button className="iconBtn" onClick={prevMonth} aria-label="Previous month" disabled={!canPrev}>‹</button>
-          <button className="todayBtn" onClick={goToday} type="button">Today</button>
-          <div className="monthLabel">{monthLabel}</div>
-          <button className="iconBtn" onClick={nextMonth} aria-label="Next month" disabled={!canNext}>›</button>
-        </div>
-      </div>
-
-      <div className="eventsLayout">
-        <div className="panel calendar">
-          <div className="calendarTop">
-            <div className="calendarMonth">{monthLabel}</div>
-            <div className="muted calendarHint">Week labels follow UniMelb 2026 teaching periods</div>
+      <section id="events" className="section">
+        <div className="sectionHead">
+          <div>
+            <h2 className="h2">{site?.events?.eventCalendar}</h2>
+            <p className="muted">{site?.events?.monthGridHint}</p>
           </div>
 
-          <div className="dow">
-            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+          <div className="monthControls">
+            <button className="iconBtn" onClick={prevMonth} aria-label={site?.events?.previousMonth} disabled={!canPrev}>‹</button>
+            <button className="todayBtn" onClick={goToday} type="button">{site?.events?.today}</button>
+            <div className="monthLabel">{monthLabel}</div>
+            <button className="iconBtn" onClick={nextMonth} aria-label={site?.events?.nextMonth} disabled={!canNext}>›</button>
           </div>
+        </div>
 
-          <div className="grid">
-            {monthMatrix.map((d) => {
-              const iso = toISODate(d)
-              const inMonth = sameMonth(d, monthCursor)
-              const hasEvents = eventsByDate.has(iso)
-              const isSelected = iso === selectedISO
+        <div className="eventsLayout">
+          <div className="panel calendar">
+            <div className="calendarTop">
+              <div className="calendarMonth">{monthLabel}</div>
+              <div className="muted calendarHint">{site?.events?.weekLabelsHint}</div>
+            </div>
 
-              const uni = getUniMelbLabel(d)
-              const showWeekOnMonday = uni?.kind === 'week' && d.getDay() === 1 // Monday
-              const showSpecial = uni && uni.kind !== 'week'
+            <div className="dow">
+              <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
 
-              return (
-                <button
-                  key={iso}
-                  className={[
-                    'day',
-                    inMonth ? 'inMonth' : 'outMonth',
-                    hasEvents ? 'has' : '',
-                    isSelected ? 'selected' : '',
-                    showSpecial ? `special ${uni.kind}` : '',
-                  ].join(' ')}
-                  onClick={() => setSelectedISO(iso)}
-                  type="button"
-                >
-                  {(showWeekOnMonday || showSpecial) && (
-                    <span className={['weekTag', showSpecial ? 'special' : ''].join(' ')}>
+            <div className="grid">
+              {monthMatrix.map((d) => {
+                const iso = toISODate(d)
+                const inMonth = sameMonth(d, monthCursor)
+                const hasEvents = eventsByDate.has(iso)
+                const isSelected = iso === selectedISO
+
+                const uni = getUniMelbLabel(d)
+                const showWeekOnMonday = uni?.kind === 'week' && d.getDay() === 1 // Monday
+                const showSpecial = uni && uni.kind !== 'week'
+
+                return (
+                    <button
+                        key={iso}
+                        className={[
+                          'day',
+                          inMonth ? 'inMonth' : 'outMonth',
+                          hasEvents ? 'has' : '',
+                          isSelected ? 'selected' : '',
+                          showSpecial ? `special ${uni.kind}` : '',
+                        ].join(' ')}
+                        onClick={() => setSelectedISO(iso)}
+                        type="button"
+                    >
+                      {(showWeekOnMonday || showSpecial) && (
+                          <span className={['weekTag', showSpecial ? 'special' : ''].join(' ')}>
                       {uni.text}
                     </span>
-                  )}
+                      )}
 
-                  <span className="num">{d.getDate()}</span>
-                  {hasEvents && <span className="dot" aria-hidden="true" />}
-                </button>
-              )
-            })}
-          </div>
+                      <span className="num">{d.getDate()}</span>
+                      {hasEvents && <span className="dot" aria-hidden="true" />}
+                    </button>
+                )
+              })}
+            </div>
 
-          <div className="legend">
-            <span className="legendItem"><span className="legendSwatch oweek" /> O-Week</span>
-            <span className="legendItem"><span className="legendSwatch break" /> Mid-sem Break</span>
-            <span className="legendItem"><span className="legendSwatch swot" /> SWOTVAC</span>
-            <span className="legendItem"><span className="legendSwatch week" /> Teaching Weeks (label shown on Mondays)</span>
-          </div>
-        </div>
-
-        <div className="panel cards">
-          <div className="cardsTop">
-            <div className="cardsTitle">Selected date</div>
-            <div className="cardsDate">
-              {selectedPretty}
-              {selectedUniLabel && <span className={`uniPill ${selectedUniLabel.kind}`}>{selectedUniLabel.text}</span>}
+            <div className="legend">
+              <span className="legendItem"><span className="legendSwatch oweek" /> O-Week</span>
+              <span className="legendItem"><span className="legendSwatch break" /> Mid-sem Break</span>
+              <span className="legendItem"><span className="legendSwatch swot" /> SWOTVAC</span>
+              <span className="legendItem"><span className="legendSwatch week" /> Teaching Weeks (label shown on Mondays)</span>
             </div>
           </div>
 
-          {selectedEvents.length === 0 ? (
-            <div className="empty">
-              <div className="emptyTitle">No events on this date.</div>
-              <div className="muted">Click a highlighted day to view event details.</div>
-            </div>
-          ) : (
-            <div className="eventCards">
-              {selectedEvents.map((e) => (
-                <button key={e.id} className="eventCard" onClick={() => navigate(`/events/${e.slug}`)} type="button">
-                  <div className="eventMeta">
-                    <span className="pill">{e.tag || 'Event'}</span>
-                    <span className="muted">{e.location}</span>
-                  </div>
-                  <h3 className="h3">{e.title}</h3>
-                  <p className="muted">{e.desc}</p>
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="cardActions">
-            <button className="btn primary" type="button">View Full Semester Calendar</button>
-            <button className="btn secondary" type="button">Suggest an Event</button>
-          </div>
-        </div>
-      </div>
-
-      <div className="carouselWrap">
-        <div className="sectionHead mini">
-          <h3 className="h3">Past Semester Highlights</h3>
-          <p className="muted">Auto-scrolls (hover / touch to pause). Seamless loop.</p>
-        </div>
-
-        <InfiniteSeamlessCarousel
-          ariaLabel="Highlights carousel"
-          secondsPerLoop={16}
-          pauseOnHover
-          items={highlights}
-          renderItem={(h) => {
-            const mapped = highlightMap?.[h.key]
-            const src = mapped || h.image || ''
-            return (
-              <div className="slide" key={h.key}>
-                <div className={`slideMedia ${h.media} ${src ? 'hasImage' : ''}`}>
-                  {src ? <img className="mediaImg" src={src} alt={`${h.title} highlight`} loading="lazy" /> : null}
-                </div>
-                <div className="slideText">
-                  <div className="slideMeta muted">{h.week}{h.month ? ` · ${h.month}` : ''}</div>
-                  <div className="slideTitle">{h.title}</div>
-                </div>
+          <div className="panel cards">
+            <div className="cardsTop">
+              <div className="cardsTitle">{site?.events?.selectedDate}</div>
+              <div className="cardsDate">
+                {selectedPretty}
+                {selectedUniLabel && <span className={`uniPill ${selectedUniLabel.kind}`}>{selectedUniLabel.text}</span>}
               </div>
-            )
-          }}
-        />
+            </div>
 
-        {adminMode && (
-          <AdminHighlightsManager
-            highlights={highlights}
-            onMappingChange={(m) => setHighlightMap(m)}
+            {selectedEvents.length === 0 ? (
+                <div className="empty">
+                  <div className="emptyTitle">{site?.events?.noEvents}</div>
+                  <div className="muted">{site?.events?.clickHighlightedDay}</div>
+                </div>
+            ) : (
+                <div className="eventCards">
+                  {selectedEvents.map((e) => (
+                      <button key={e.id} className="eventCard" onClick={() => navigate(`/events/${e.slug}`)} type="button">
+                        <div className="eventMeta">
+                          <span className="pill">{e.tag || 'Event'}</span>
+                          <span className="muted">{e.location}</span>
+                        </div>
+                        <h3 className="h3">{e.title}</h3>
+                        <p className="muted">{e.desc}</p>
+                      </button>
+                  ))}
+                </div>
+            )}
+
+            <div className="cardActions">
+              <button className="btn primary" type="button">{site?.events?.viewFullCalendar}</button>
+              <button className="btn secondary" type="button">{site?.events?.suggestEvent}</button>
+            </div>
+          </div>
+        </div>
+
+        <div className="carouselWrap">
+          <div className="sectionHead mini">
+            <h3 className="h3">{site?.events?.pastHighlights}</h3>
+            <p className="muted">{site?.events?.carouselHint}</p>
+          </div>
+
+          <InfiniteSeamlessCarousel
+              ariaLabel="Highlights carousel"
+              secondsPerLoop={16}
+              pauseOnHover
+              items={highlights}
+              renderItem={(h) => {
+                const mapped = highlightMap?.[h.key]
+                const src = mapped || h.image || ''
+                return (
+                    <div className="slide" key={h.key}>
+                      <div className={`slideMedia ${h.media} ${src ? 'hasImage' : ''}`}>
+                        {src ? <img className="mediaImg" src={src} alt={`${h.title} highlight`} loading="lazy" /> : null}
+                      </div>
+                      <div className="slideText">
+                        <div className="slideMeta muted">{h.week}{h.month ? ` · ${h.month}` : ''}</div>
+                        <div className="slideTitle">{h.title}</div>
+                      </div>
+                    </div>
+                )
+              }}
           />
-        )}
-      </div>
-    </section>
+
+          {adminMode && (
+              <AdminHighlightsManager
+                  highlights={highlights}
+                  onMappingChange={(m) => setHighlightMap(m)}
+              />
+          )}
+        </div>
+      </section>
   )
 }
